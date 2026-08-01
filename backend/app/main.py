@@ -17,9 +17,11 @@ logger = logging.getLogger("deepshield")
 
 settings = get_settings()
 
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".next")
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".next", "static")
-PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public")
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.join(BACKEND_DIR, "..", "..")
+FRONTEND_DIR = os.path.join(APP_DIR, ".next")
+STATIC_DIR = os.path.join(APP_DIR, ".next", "static")
+PUBLIC_DIR = os.path.join(APP_DIR, "public")
 
 
 @asynccontextmanager
@@ -70,7 +72,7 @@ api_router.include_router(livekit.router)
 
 app.include_router(api_router)
 
-uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "uploads")
+uploads_dir = os.path.join(APP_DIR, "uploads")
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
