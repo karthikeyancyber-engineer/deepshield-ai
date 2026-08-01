@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: deepshield-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./deepshield.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRY_MINUTES
+        value: 1440
+      - key: CORS_ORIGINS
+        value: '["*"]'
+      - key: UPLOAD_DIR
+        value: uploads
+      - key: MAX_UPLOAD_SIZE
+        value: "10485760"
+      - key: FRONTEND_URL
+        sync: false
+      - key: APP_NAME
+        value: DeepShield AI
+      - key: APP_VERSION
+        value: 2.0.0
+      - key: DEBUG
+        value: "false"
+      - key: EMAIL_ADDRESS
+        sync: false
+      - key: EMAIL_APP_PASSWORD
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_URL
+        sync: false

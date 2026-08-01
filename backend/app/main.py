@@ -1,0 +1,103 @@
+from fastapi import FastAPI, Request, Response, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
+from app.config import get_settings
+from app.database import init_db
+from app.routers import auth, interviews, admin, live, reports, otp_auth, interview_requests, notifications, video_stream, livekit
+import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger("deepshield")
+
+settings = get_settings()
+
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".next")
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".next", "static")
+PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting DeepShield AI v%s", settings.APP_VERSION)
+    await init_db()
+    logger.info("Database initialized")
+    yield
+    logger.info("Shutting down DeepShield AI")
+
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    lifespan=lifespan,
+)
+
+
+@app.middleware("http")
+async def cors_middleware(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = Response()
+        response.status_code = 204
+    else:
+        response = await call_next(request)
+
+    origin = request.headers.get("origin", "*")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Max-Age"] = "3600"
+    return response
+
+
+api_router = APIRouter(prefix="/api")
+
+api_router.include_router(auth.router)
+api_router.include_router(otp_auth.router)
+api_router.include_router(interviews.router)
+api_router.include_router(admin.router)
+api_router.include_router(live.router)
+api_router.include_router(reports.router)
+api_router.include_router(interview_requests.router)
+api_router.include_router(notifications.router)
+api_router.include_router(video_stream.router)
+api_router.include_router(livekit.router)
+
+app.include_router(api_router)
+
+uploads_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "version": settings.APP_VERSION}
+
+
+if os.path.exists(STATIC_DIR):
+    app.mount("/_next/static", StaticFiles(directory=STATIC_DIR), name="next-static")
+
+if os.path.exists(PUBLIC_DIR):
+    app.mount("/public", StaticFiles(directory=PUBLIC_DIR), name="public")
+
+
+@app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def serve_spa(request: Request, full_path: str):
+    if full_path.startswith("api/"):
+        return Response(status_code=404)
+
+    file_path = os.path.join(FRONTEND_DIR, full_path)
+    if full_path and os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return FileResponse(index_file)
+
+    return Response(status_code=404)

@@ -1,0 +1,33 @@
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+
+# Database
+sqlalchemy[asyncio]==2.0.35
+aiosqlite==0.19.0
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+
+# Settings & Environment
+pydantic==2.9.0
+pydantic-settings==2.5.0
+python-dotenv==1.0.1
+
+# AI & Computer Vision
+opencv-python-headless==4.10.0.84
+mediapipe==0.10.18
+numpy==1.26.4
+scipy==1.14.1
+
+# Reports
+reportlab==4.2.2
+
+# LiveKit (video)
+livekit==0.15.0
+
+# Email
+aiosmtplib==3.0.1
