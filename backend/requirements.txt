@@ -26,8 +26,5 @@ scipy==1.14.1
 # Reports
 reportlab==4.2.2
 
-# LiveKit (video - optional)
-livekit-api==0.7.1
-
 # Email
 aiosmtplib==3.0.1
