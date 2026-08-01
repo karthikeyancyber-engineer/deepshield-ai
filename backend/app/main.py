@@ -83,6 +83,15 @@ async def health():
     return {"status": "healthy", "version": settings.APP_VERSION}
 
 
+@app.get("/debug-email")
+async def debug_email():
+    import os
+    return {
+        "resend_key_set": bool(os.environ.get("RESEND_API_KEY")),
+        "email_vars": [k for k in os.environ.keys() if "RESEND" in k or "EMAIL" in k or "resend" in k],
+    }
+
+
 next_static = os.path.join(FRONTEND_DIR, "_next")
 if os.path.exists(next_static):
     app.mount("/_next", StaticFiles(directory=next_static), name="next-static")
