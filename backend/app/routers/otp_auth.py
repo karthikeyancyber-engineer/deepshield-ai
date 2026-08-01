@@ -41,7 +41,11 @@ async def send_otp(req: SendOTPRequest, db: AsyncSession = Depends(get_db)):
     # Send email (run in thread to avoid blocking)
     email_result = await asyncio.to_thread(send_otp_email, req.email, otp_result["otp"], req.purpose)
     if not email_result["success"]:
-        raise HTTPException(status_code=500, detail=f"Failed to send OTP: {email_result['error']}")
+        # Dev mode: return OTP in response so user can test without email
+        return OTPResponse(
+            message=f"Email failed ({email_result['error']}). Dev mode OTP: {otp_result['otp']}",
+            cooldown_seconds=otp_result["cooldown_seconds"],
+        )
 
     return OTPResponse(
         message="OTP sent successfully to your email",

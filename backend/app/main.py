@@ -80,12 +80,7 @@ app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 @app.get("/health")
 async def health():
-    import os
-    return {
-        "status": "healthy",
-        "version": settings.APP_VERSION,
-        "all_env_keys": sorted(os.environ.keys()),
-    }
+    return {"status": "healthy", "version": settings.APP_VERSION}
 
 
 next_static = os.path.join(FRONTEND_DIR, "_next")
