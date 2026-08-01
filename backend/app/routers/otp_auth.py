@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -37,8 +38,8 @@ async def send_otp(req: SendOTPRequest, db: AsyncSession = Depends(get_db)):
     if "error" in otp_result:
         raise HTTPException(status_code=429, detail=otp_result["error"])
 
-    # Send email
-    email_result = send_otp_email(req.email, otp_result["otp"], req.purpose)
+    # Send email (run in thread to avoid blocking)
+    email_result = await asyncio.to_thread(send_otp_email, req.email, otp_result["otp"], req.purpose)
     if not email_result["success"]:
         raise HTTPException(status_code=500, detail=f"Failed to send OTP: {email_result['error']}")
 
