@@ -3,7 +3,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from livekit.api import AccessToken, VideoGrants
+
+try:
+    from livekit.api import AccessToken, VideoGrants
+    LIVEKIT_AVAILABLE = True
+except ImportError:
+    LIVEKIT_AVAILABLE = False
 
 from app.database import get_db
 from app.models.user import User
@@ -27,6 +32,8 @@ class LiveKitTokenResponse(BaseModel):
 
 
 def generate_livekit_token(identity: str, room: str, name: str = "") -> str:
+    if not LIVEKIT_AVAILABLE:
+        raise HTTPException(status_code=500, detail="LiveKit SDK not installed")
     token = (
         AccessToken(
             api_key=settings.LIVEKIT_API_KEY,
