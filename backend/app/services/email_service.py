@@ -126,7 +126,9 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str) -> dict:
     msg.attach(html_part)
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        import ssl
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=15) as server:
             server.login(settings.EMAIL_ADDRESS, settings.EMAIL_APP_PASSWORD)
             server.sendmail(settings.EMAIL_ADDRESS, to_email, msg.as_string())
         return {"success": True, "error": None}
