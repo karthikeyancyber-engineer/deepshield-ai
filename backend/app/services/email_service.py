@@ -95,8 +95,10 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str) -> dict:
     html_body = OTP_EMAIL_TEMPLATE.replace("{OTP}", otp_code)
     text_body = f"DeepShield AI - Security Verification\n\nYour verification code is: {otp_code}\n\nThis code expires in 5 minutes.\n\nIf you did not request this verification, please ignore this email.\n\nDeepShield AI Security Team"
 
+    sender = os.environ.get("EMAIL_FROM", "DeepShield AI <onboarding@resend.dev>")
+
     payload = json.dumps({
-        "from": "DeepShield AI <onboarding@resend.dev>",
+        "from": sender,
         "to": [to_email],
         "subject": "DeepShield AI - Security Verification",
         "html": html_body,
