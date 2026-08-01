@@ -84,8 +84,7 @@ async def health():
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,
-        "resend_key_set": bool(os.environ.get("RESEND_API_KEY")),
-        "email_env_vars": [k for k in os.environ.keys() if "RESEND" in k or "EMAIL" in k or "resend" in k],
+        "all_env_keys": sorted(os.environ.keys()),
     }
 
 
