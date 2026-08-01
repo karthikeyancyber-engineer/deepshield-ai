@@ -47,6 +47,8 @@ COPY --from=frontend-builder /app/frontend/node_modules/ ./frontend/node_modules
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/
 COPY --from=frontend-builder /app/frontend/public/ ./frontend/public/
 COPY --from=frontend-builder /app/frontend/middleware.ts ./frontend/middleware.ts
+COPY --from=frontend-builder /app/frontend/next.config.js ./frontend/next.config.js
+COPY --from=frontend-builder /app/frontend/tsconfig.json ./frontend/tsconfig.json
 
 RUN mkdir -p uploads
 
