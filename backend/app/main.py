@@ -25,6 +25,7 @@ uploads_dir = os.path.join(APP_DIR, "uploads")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting DeepShield AI v%s", settings.APP_VERSION)
+    logger.info("RESEND_API_KEY set: %s", bool(settings.RESEND_API_KEY))
     logger.info("Frontend dir: %s (exists: %s)", FRONTEND_DIR, os.path.exists(FRONTEND_DIR))
     if os.path.exists(FRONTEND_DIR):
         logger.info("Frontend files: %s", os.listdir(FRONTEND_DIR)[:10])
