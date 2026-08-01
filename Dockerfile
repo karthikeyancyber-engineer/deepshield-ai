@@ -2,7 +2,7 @@
 # DeepShield AI - Production Dockerfile
 # ============================================
 
-# Stage 1: Build Next.js frontend
+# Stage 1: Build Next.js frontend (static export)
 FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/frontend
@@ -41,10 +41,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./backend/
 
-COPY --from=frontend-builder /app/frontend/.next/ ./.next/
-COPY --from=frontend-builder /app/frontend/node_modules/ ./node_modules/
-COPY --from=frontend-builder /app/frontend/package.json ./
-COPY --from=frontend-builder /app/frontend/public/ ./public/
+COPY --from=frontend-builder /app/frontend/out/ ./frontend/
+COPY --from=frontend-builder /app/frontend/public/ ./frontend/public/
 
 RUN mkdir -p uploads
 
@@ -53,6 +51,6 @@ WORKDIR /app/backend
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
 CMD ["sh", "-c", "python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
