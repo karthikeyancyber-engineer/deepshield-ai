@@ -4,12 +4,6 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-try:
-    from livekit.api import AccessToken, VideoGrants
-    LIVEKIT_AVAILABLE = True
-except ImportError:
-    LIVEKIT_AVAILABLE = False
-
 from app.database import get_db
 from app.models.user import User
 from app.models.interview import Interview
@@ -31,9 +25,18 @@ class LiveKitTokenResponse(BaseModel):
     ws_url: str
 
 
+def _check_livekit():
+    if not settings.LIVEKIT_API_KEY or not settings.LIVEKIT_API_SECRET:
+        raise HTTPException(status_code=500, detail="LiveKit not configured")
+    try:
+        from livekit.api import AccessToken, VideoGrants
+        return AccessToken, VideoGrants
+    except Exception:
+        raise HTTPException(status_code=500, detail="LiveKit SDK not available")
+
+
 def generate_livekit_token(identity: str, room: str, name: str = "") -> str:
-    if not LIVEKIT_AVAILABLE:
-        raise HTTPException(status_code=500, detail="LiveKit SDK not installed")
+    AccessToken, VideoGrants = _check_livekit()
     token = (
         AccessToken(
             api_key=settings.LIVEKIT_API_KEY,

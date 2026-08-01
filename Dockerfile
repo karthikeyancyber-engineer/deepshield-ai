@@ -1,6 +1,5 @@
 # ============================================
 # DeepShield AI - Production Dockerfile
-# Multi-stage build: Node.js + Python
 # ============================================
 
 # Stage 1: Build Next.js frontend
@@ -10,7 +9,6 @@ WORKDIR /app/frontend
 
 COPY package.json package-lock.json ./
 RUN npm ci
-RUN npm rebuild
 
 COPY src/ ./src/
 COPY public/ ./public/
