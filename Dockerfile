@@ -12,14 +12,11 @@ RUN npm ci
 
 COPY src/ ./src/
 COPY public/ ./public/
-COPY next.config.js tsconfig.json postcss.config.mjs tailwind.config.js ./
-
-ARG NEXT_PUBLIC_API_URL=""
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+COPY next.config.js tsconfig.json postcss.config.mjs tailwind.config.js middleware.ts ./
 
 RUN npm run build
 
-# Stage 2: Production image with Python + Node.js
+# Stage 2: Production image
 FROM python:3.12-slim AS production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -32,10 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     libpng-dev \
     curl \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js for Next.js
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
@@ -51,6 +46,7 @@ COPY --from=frontend-builder /app/frontend/.next/ ./frontend/.next/
 COPY --from=frontend-builder /app/frontend/node_modules/ ./frontend/node_modules/
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/
 COPY --from=frontend-builder /app/frontend/public/ ./frontend/public/
+COPY --from=frontend-builder /app/frontend/middleware.ts ./frontend/middleware.ts
 
 RUN mkdir -p uploads
 

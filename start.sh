@@ -5,7 +5,7 @@ cd /app/backend
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
 BACKEND_PID=$!
 
-sleep 3
+sleep 5
 
 cd /app/frontend
 PORT=${PORT:-10000} npx next start -p ${PORT:-10000} -H 0.0.0.0 &

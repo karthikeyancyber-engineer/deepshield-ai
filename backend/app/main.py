@@ -18,7 +18,7 @@ logger = logging.getLogger("deepshield")
 settings = get_settings()
 
 APP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
-FRONTEND_DIR = os.path.join(APP_DIR, "frontend")
+FRONTEND_DIR = os.path.join(APP_DIR, "out")
 uploads_dir = os.path.join(APP_DIR, "uploads")
 
 
@@ -26,6 +26,8 @@ uploads_dir = os.path.join(APP_DIR, "uploads")
 async def lifespan(app: FastAPI):
     logger.info("Starting DeepShield AI v%s", settings.APP_VERSION)
     logger.info("Frontend dir: %s (exists: %s)", FRONTEND_DIR, os.path.exists(FRONTEND_DIR))
+    if os.path.exists(FRONTEND_DIR):
+        logger.info("Frontend files: %s", os.listdir(FRONTEND_DIR)[:10])
     await init_db()
     logger.info("Database initialized")
     yield
@@ -80,32 +82,35 @@ async def health():
     return {"status": "healthy", "version": settings.APP_VERSION}
 
 
-if os.path.exists(FRONTEND_DIR):
-    app.mount("/_next", StaticFiles(directory=os.path.join(FRONTEND_DIR, "_next")), name="next-static") if os.path.exists(os.path.join(FRONTEND_DIR, "_next")) else None
+next_static = os.path.join(FRONTEND_DIR, "_next")
+if os.path.exists(next_static):
+    app.mount("/_next", StaticFiles(directory=next_static), name="next-static")
 
-    @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-    async def serve_spa(request: Request, full_path: str):
-        if full_path.startswith("api/"):
-            return Response(status_code=404)
 
-        if full_path.startswith("_next/"):
-            file_path = os.path.join(FRONTEND_DIR, full_path)
-            if os.path.isfile(file_path):
-                return FileResponse(file_path)
-            return Response(status_code=404)
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    if full_path.startswith("api/"):
+        return Response(status_code=404)
 
+    if full_path.startswith("_next/"):
         file_path = os.path.join(FRONTEND_DIR, full_path)
-        if full_path and os.path.isfile(file_path):
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return Response(status_code=404)
+
+    if full_path:
+        file_path = os.path.join(FRONTEND_DIR, full_path)
+        if os.path.isfile(file_path):
             return FileResponse(file_path)
 
-        index_file = os.path.join(FRONTEND_DIR, "index.html")
-        if os.path.isfile(index_file):
-            return FileResponse(index_file)
+        if os.path.isfile(file_path + "/index.html"):
+            return FileResponse(file_path + "/index.html")
 
-        return Response(status_code=404)
-else:
-    logger.warning("Frontend directory not found at %s", FRONTEND_DIR)
+        if os.path.isfile(file_path + ".html"):
+            return FileResponse(file_path + ".html")
 
-    @app.get("/")
-    async def no_frontend():
-        return {"message": "Backend is running. Frontend build not found."}
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return FileResponse(index_file)
+
+    return Response(status_code=404)
