@@ -1,9 +1,8 @@
 import json
+import os
 import urllib.request
 import urllib.error
-from app.config import get_settings
 
-settings = get_settings()
 
 
 OTP_EMAIL_TEMPLATE = """
@@ -89,7 +88,7 @@ OTP_EMAIL_TEMPLATE = """
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str) -> dict:
     """Send OTP email via Resend HTTP API."""
-    api_key = settings.RESEND_API_KEY
+    api_key = os.environ.get("RESEND_API_KEY", "")
     if not api_key:
         return {"success": False, "error": "Email not configured. Set RESEND_API_KEY in environment variables."}
 
