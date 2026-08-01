@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # Email / OTP
     EMAIL_ADDRESS: str = ""
     EMAIL_APP_PASSWORD: str = ""
+    RESEND_API_KEY: str = ""
     FRONTEND_URL: str = ""
     OTP_EXPIRY_MINUTES: int = 5
     OTP_MAX_ATTEMPTS: int = 5

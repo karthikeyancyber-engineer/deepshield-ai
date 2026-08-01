@@ -26,5 +26,4 @@ scipy==1.14.1
 # Reports
 reportlab==4.2.2
 
-# Email
-aiosmtplib==3.0.1
+
